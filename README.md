@@ -11,35 +11,26 @@
 
 ## Introduction
 
-Our Transcription App is designed to simplify and streamline the process of transcribing audio files. With this app, you can upload your audio files and receive a transcript in a matter of minutes. Here's how it works:
+The Transcription sample application simplifies and streamlines the process of transcribing audio files. This sample application allows you to upload your audio files and receive a transcript in minutes. The sample application exposes a user-friendly web interface that allows you to upload audio files and view completed transcription jobs in an S3 bucket with an email triggered via SES to notify you of the job completion. You can further view a list of all your completed transcription jobs and a link to download the transcription JSON file. Users can deploy this application setup via the Serverless Framework on LocalStack. To test this application sample, we will demonstrate how you use LocalStack to deploy the infrastructure on your developer machine and your CI environment and invoke the transcription job on your local machine.
 
-1. **Lambda Function Serves Frontend:**
-When you navigate to our `ServiceEndpoint`, a lambda function will serve a user-friendly frontend. From there, you can choose to upload an audio file or view existing transcription jobs.
+## Architecture diagram
 
-2. **Uploading Audio File and Triggering Transcription:** When you select a file and click upload, the file will be uploaded to an S3 bucket, which will trigger a transcription job. The transcription job will convert the audio file into a transcription JSON file. The JSON file will then be uploaded to another S3 bucket.
+The following diagram shows the architecture that this sample application builds and deploys:
 
-3. **Email Notification of Job Completion:** Once the transcription job is complete and the transcription JSON is uploaded to S3, an email will be sent to the end user using SES (Simple Email Service) to notify them of the job completion. This email will contain the transcripted content of the audio file. You can use the [SES developer endpoint](https://docs.localstack.cloud/user-guide/aws/ses/) to list messages that were sent via SES:
+![Architecture diagram for Serverless Transcription Application](./images/architecture-diagram.png)
 
-```bash
-curl -s http://localhost.localstack.cloud:4566/_aws/ses
-```
+We are using the following AWS services to build our infrastructure:
 
-4. **Viewing and Downloading Transcription:** To view and download the transcription, you can click on the "List Jobs" button on the frontend. This will display a list of all your completed transcription jobs, along with a link to download the transcription JSON file.
+- [Lambda](https://docs.localstack.cloud/user-guide/aws/lambda/) to serve the frontend and process the audio file.
+- [Transcribe](https://docs.localstack.cloud/user-guide/aws/transcribe/) to convert the audio file into a transcription JSON file.
+- [S3](https://docs.localstack.cloud/user-guide/aws/s3/) to store the audio file and the transcription JSON file.
+- [SES](https://docs.localstack.cloud/user-guide/aws/ses/) to send an email notification to the end user.
 
-Our Transcription App leverages the power of AWS services such as Lambda, S3, Transcribe, and SES to provide you with a simple, efficient, and cost-effective solution for transcribing your audio files.
+### Prerequisites
 
-## Architecture overview
-
-Here's an architecture diagram of the application:
-![Architecture](./images/architecture.png)
-
-### Pre-requisites:
-You need few things installed on your machine before you can deploy the application on LocalStack:
 - LocalStack Pro with the [`localstack` CLI](https://docs.localstack.cloud/getting-started/installation/#localstack-cli).
 - [AWS CLI](https://docs.localstack.cloud/user-guide/integrations/aws-cli/) with the [`awslocal` wrapper](https://docs.localstack.cloud/user-guide/integrations/aws-cli/#localstack-aws-cli-awslocal).
-- [Serverless Framework](https://www.npmjs.com/package/serverless).
-- [Serverless LocalStack Plugin](https://www.npmjs.com/package/serverless-localstack)
-- [Serverless Lift Plugin](https://www.npmjs.com/package/serverless-lift)
+- [Serverless Framework](https://www.npmjs.com/package/serverless) with [Serverless LocalStack Plugin](https://www.npmjs.com/package/serverless-localstack) and [Serverless Lift Plugin](https://www.npmjs.com/package/serverless-lift)
 - [Node.js](https://nodejs.org/en/download/) with `npm` package manager.
 
 Start LocalStack Pro with the `LOCALSTACK_API_KEY` pre-configured:
@@ -55,21 +46,55 @@ localstack start
 
 You can build and deploy the sample application on LocalStack by running our `Makefile` commands. Run `make deploy` to create the infrastructure on LocalStack. Run `make stop` to delete the infrastructure by stopping LocalStack.
 
-## Testing the application
+Alternatively, here are instructions to deploy it manually step-by-step.
 
-To use the application, please follow the steps outlined below:
+### Install the dependencies
 
-1. Access the application’s user interface by visiting the `ServiceEndpoint` URL specified in the output of the `make deploy` command; with `upload` static route parameter; after deployemnt of the app, eg: `https://vmvs1am212p.execute-api.localhost.localstack.cloud:4566/local/upload`. 
+We use the [Serverless Framework](https://www.serverless.com/framework/docs/getting-started/) to deploy the sample application. Install the Serverless Framework and other dependencies by running the following commands:
 
+```shell
+npm install -g serverless
+npm install
+```
 
-![Upload audio file page](./images/upload.png)
+### Deploy the infrastructure
 
-2. Click on the `Upload` button to upload a file; you can choose one on the files from `sample-audio-files` folder; to the designated S3 bucket (i.e., `aws-node-sample-transcribe-s3-local-records`).
-3. Allow sufficient time for the Lambda function:`aws-node-sample-transcribe-s3-local-transcribe` to process the uploaded file.
-4.  The Lambda function will create a transcription job with the record uploaded in **step 2** and push the resulting output JSON file to an S3 bucket (i.e., `aws-node-sample-transcribe-s3-local-transcriptions`).
-5. Upon completion of the file processing, the UI will display the transcription output. Click the `List all jobs` button to view it.
+We will use the `serverless deploy` command to deploy the infrastructure. This command will create the required resources on LocalStack. Run the following command to deploy the infrastructure:
 
-![List transcripted files page](./images/list.png)
+```shell
+sls deploy --stage local --verbose
+```
 
-6. The transcription can be downloaded by selecting the **jobname.json** link.
-7. To verify that the email has been sent correctly, use the internal LocalStack SES endpoint at `http://localhost.localstack.cloud:4566/_aws/ses`.
+> The `--stage` flag is specified to deploy the infrastructure to the `local` stage. It sets up Serverless to use the LocalStack plugin but only for the stage `local` to deploy the infrastructure to LocalStack only.
+
+After a few seconds, the infrastructure should be deployed successfully. You will find a `ServiceEndpoint` URL specified in the output. This URL is the endpoint for the frontend application and should look similar to: `https://vmvs1am212p.execute-api.localhost.localstack.cloud:4566/local/upload`.
+
+Next, we need to create configurations for CORS settings for our S3 bucket and verification for SES:
+
+```shell
+awslocal s3api put-bucket-cors --bucket aws-node-sample-transcribe-s3-local-records  --cors-configuration file://etc/cors.json
+awslocal s3api put-bucket-cors --bucket aws-node-sample-transcribe-s3-local-transcriptions  --cors-configuration file://etc/cors.json
+awslocal ses verify-email-identity --email-address sender@example.com
+```
+
+### Testing the application
+
+Navigate to the `ServiceEndpoint` URL specified in the output of the `sls deploy` command. Specify the `upload` static route parameter to access the application. You should see a web page similar to the following:
+
+![Web interface showing the upload audio file page](./images/upload.png)
+
+Click on the **Upload** button to upload a file. You can choose one of the files from the `sample-audio-files` folder, which will then be uploaded to the designated S3 bucket (`aws-node-sample-transcribe-s3-local-records`).
+
+Allow the Lambda function (`aws-node-sample-transcribe-s3-local-transcribe`) to process the uploaded file. The Lambda function will create a transcription job with the record uploaded in the previous step and push the resulting output JSON file to an S3 bucket (`aws-node-sample-transcribe-s3-local-transcriptions`).
+
+Upon completion of the file processing, the user interface will display the transcription output. Click the **List all jobs** button to view it.
+
+![Web interface showing the List transcripted files page](./images/list.png)
+
+The transcription can be downloaded by selecting the **jobname.json** hyperlink. To verify that the email has been sent correctly, use the internal LocalStack SES endpoint at `http://localhost.localstack.cloud:4566/_aws/ses`.
+
+### GitHub Actions
+
+This application sample hosts an example GitHub Action workflow that starts up LocalStack, builds the Lambda functions, and deploys the infrastructure on the runner. You can find the workflow in the `.github/workflows/main.yml` file. To run the workflow, you can fork this repository and push a commit to the `main` branch.
+
+Users can adapt this example workflow to run in their own CI environment. LocalStack supports various CI environments, including GitHub Actions, CircleCI, Jenkins, Travis CI, and more. You can find more information about the CI integration in the [LocalStack documentation](https://docs.localstack.cloud/user-guide/ci/).
