@@ -30,6 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          npm install -g serverless
           make install
 
       - name: Start LocalStack
@@ -47,4 +48,5 @@ jobs:
 
       - name: Run the application
         run: |
+          npm install -D serverless-localstack
           make deploy

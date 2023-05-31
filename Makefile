@@ -9,6 +9,7 @@ usage:
 
 ## Install dependencies
 install:
+		@which serverless || yarn add serverless
 		@which localstack || pip install localstack
 		@which awslocal || pip install awscli-local
 		@which npm || npm install
