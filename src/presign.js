@@ -7,7 +7,7 @@ AWS.config.credentials = credentials;
   
 const s3 = new AWS.S3(
     {
-        endpoint: 'http://s3.localhost.localstack.cloud:4566',
+        endpoint: 'https://s3.localhost.localstack.cloud:4566',
         s3ForcePathStyle: true,
     }
 );
