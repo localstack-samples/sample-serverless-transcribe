@@ -84,6 +84,10 @@ constructs:
       handler: src/queue.consumer
 
 resources:
+  Outputs:
+      LocalStackSampleAppEndpoint:
+        Description: Landingpage of the Sample App
+        Value: !Sub "https://${ApiGatewayRestApi}.execute-api.localhost.localstack.cloud/${sls:stage}/upload"
   Resources:
     S3TranscriptionBucket:
       Type: 'AWS::S3::Bucket'

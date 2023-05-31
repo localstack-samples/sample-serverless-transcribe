@@ -30,7 +30,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -g serverless
           make install
 
       - name: Start LocalStack
@@ -48,5 +47,17 @@ jobs:
 
       - name: Run the application
         run: |
-          npm install -D serverless-localstack
           make deploy
+          
+      - name: curl endpoint
+        run: |
+          rest_api=$(awslocal apigateway get-rest-apis | jq -r '.items[0].id')
+          url="https://${rest_api}.execute-api.localhost.localstack.cloud:4566/local/upload"
+          echo "curling $url ..."
+          result=$(curl $url)
+          if [[ "$result" != *"<h1>AWS Transcribe Example</h1>"* ]]; then
+            echo "unexpected response"
+            echo $result
+            exit 1
+          fi
+

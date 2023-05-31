@@ -11,7 +11,14 @@
 
 ## Introduction
 
-The Transcription sample application simplifies and streamlines the process of transcribing audio files. This sample application allows you to upload your audio files and receive a transcript in minutes. The sample application exposes a user-friendly web interface that allows you to upload audio files and view completed transcription jobs in an S3 bucket with an email triggered via SES to notify you of the job completion. You can further view a list of all your completed transcription jobs and a link to download the transcription JSON file. Users can deploy this application setup via the Serverless Framework on LocalStack. To test this application sample, we will demonstrate how you use LocalStack to deploy the infrastructure on your developer machine and your CI environment and invoke the transcription job on your local machine.
+The Transcription sample application simplifies and streamlines the process of transcribing audio files. 
+This sample application allows you to upload your audio files and receive a transcript in minutes. 
+
+The sample application exposes a user-friendly web interface that allows you to upload audio files and view completed transcription jobs in an S3 bucket with an email triggered via SES to notify you of the job completion. 
+You can further view a list of all your completed transcription jobs and a link to download the transcription JSON file. 
+Users can deploy this application setup via the Serverless Framework on LocalStack. 
+
+To test this application sample, we will demonstrate how you use LocalStack to deploy the infrastructure on your developer machine and your CI environment and invoke the transcription job on your local machine.
 
 ## Architecture diagram
 
@@ -67,7 +74,8 @@ sls deploy --stage local --verbose
 
 > The `--stage` flag is specified to deploy the infrastructure to the `local` stage. It sets up Serverless to use the LocalStack plugin but only for the stage `local` to deploy the infrastructure to LocalStack only.
 
-After a few seconds, the infrastructure should be deployed successfully. You will find a `ServiceEndpoint` URL specified in the output. This URL is the endpoint for the frontend application and should look similar to: `https://vmvs1am212p.execute-api.localhost.localstack.cloud:4566/local/upload`.
+After a few seconds, the infrastructure should be deployed successfully. 
+You will find a `LocalStackSampleAppEndpoint` URL specified in the output. This URL is the endpoint for the frontend application and should look similar to: `https://vmvs1am212p.execute-api.localhost.localstack.cloud:4566/local/upload`.
 
 Next, we need to create configurations for CORS settings for our S3 bucket and verification for SES:
 
@@ -79,19 +87,51 @@ awslocal ses verify-email-identity --email-address sender@example.com
 
 ### Testing the application
 
-Navigate to the `ServiceEndpoint` URL specified in the output of the `sls deploy` command. Specify the `upload` static route parameter to access the application. You should see a web page similar to the following:
+Navigate to the `LocalStackSampleAppEndpoint` URL specified in the output of the `sls deploy` command. 
+When accessing the webpage the first time, it will take a few seconds to load.
+You should see a web page similar to the following:
 
 ![Web interface showing the upload audio file page](./images/upload.png)
 
-Click on the **Upload** button to upload a file. You can choose one of the files from the `sample-audio-files` folder, which will then be uploaded to the designated S3 bucket (`aws-node-sample-transcribe-s3-local-records`).
+Click on the **Upload** button to upload a file. You can choose one of the files from the `sample-audio-files` folder, which will then be uploaded to the designated S3 bucket (`aws-node-sample-transcribe-s3-local-records`). 
 
-Allow the Lambda function (`aws-node-sample-transcribe-s3-local-transcribe`) to process the uploaded file. The Lambda function will create a transcription job with the record uploaded in the previous step and push the resulting output JSON file to an S3 bucket (`aws-node-sample-transcribe-s3-local-transcriptions`).
+> Note: The upload will take a few seconds for the first time, subsequent uploads will be faster, because the Lambda is already warm. 
 
-Upon completion of the file processing, the user interface will display the transcription output. Click the **List all jobs** button to view it.
+Allow the Lambda function (`aws-node-sample-transcribe-s3-local-transcribe`) to process the uploaded file. 
+The Lambda function will create a transcription job with the record uploaded in the previous step and push the resulting output JSON file to an S3 bucket (`aws-node-sample-transcribe-s3-local-transcriptions`).
+
+Upon completion of the file processing, the user interface will display the transcription output. 
+Click the **List all jobs** button to view it.
+You might need to reload the page, if it is not visible yet.
 
 ![Web interface showing the List transcripted files page](./images/list.png)
 
-The transcription can be downloaded by selecting the **jobname.json** hyperlink. To verify that the email has been sent correctly, use the internal LocalStack SES endpoint at `http://localhost.localstack.cloud:4566/_aws/ses`.
+The transcription can be downloaded by selecting the **jobname.json** hyperlink. 
+To verify that the email has been sent correctly, use the internal LocalStack SES endpoint at `http://localhost.localstack.cloud:4566/_aws/ses`.
+
+### Using SMTP Integration
+
+LocalStack Pro supports [sending messages through an SMTP email server](https://docs.localstack.cloud/user-guide/aws/ses/#smtp-integration).
+To test this feature, you could use a mock SMTP server, like [smtp4dev](https://github.com/rnwood/smtp4dev) or [Papercut SMTP](https://github.com/ChangemakerStudios/Papercut-SMTP) to receive the email notifications locally.
+
+For example, when using `smpt4dev` start the SMTP server using:
+
+```shell
+docker run --rm -it -p 3000:80 -p 2525:25 rnwood/smtp4dev
+```
+
+You can then access the web interface on `http://localhost:3000` where you will see any incoming messages.
+Then start LocalStack with the `SMTP_HOST` environment variable, pointing to the host and port where the SMTP server is reachable:
+
+```shell
+export LOCALSTACK_API_KEY=<your-api-key>
+SMTP_HOST=host.docker.internal:2525 localstack start
+```
+
+> If you are using a real SMTP server, you will also need to set the env for `SMTP_USER` and `SMTP_PASS`).
+
+Following the instructions of the deployment above. The emails will show up in the web UI.
+
 
 ### GitHub Actions
 
