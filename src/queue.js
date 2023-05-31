@@ -73,12 +73,12 @@ const consumer = async (event) => {
           Body: {
             Text: {
               Charset: "UTF-8",
-              Data: `Hey there! Here is your generatad transcribed file: ${record.body}`
+              Data: `Hey there! Here is your generated transcribed file:\n${record.body}`
             }
           },
           Subject: {
             Charset: "UTF-8",
-            Data: "Test Email - JOB HAS BEEN COMPLETED SUCESSFULLY"
+            Data: "Test Email - JOB COMPLETED SUCESSFULLY"
           }
         },
         Source: "sender@example.com" // Sender email address

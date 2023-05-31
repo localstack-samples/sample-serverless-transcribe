@@ -52,10 +52,12 @@ exports.get = async (event) => {
                             if (response.ok) {
                                 alert('File uploaded successfully!');
                             } else {
-                            console.log('Error uploading file:', response.statusText);
+                                alert('File upload failed!');
+                                console.log('Error uploading file:', response.statusText);
                             }
                         })
                         .catch(error => {
+                            alert('File could not be uploaded!');
                             console.log('Error uploading file:', error);
                         });
                     }

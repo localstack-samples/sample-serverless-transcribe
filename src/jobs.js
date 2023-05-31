@@ -36,7 +36,7 @@ exports.list = async (event, context, callback) => {
     const { Contents } = await s3.listObjects(params).promise();
     const keys = Contents.map(({ Key }) => Key);
     keys.forEach(object => {
-      htmlStr += `<li><a href="http://s3.localhost.localstack.cloud:4566/${bucketName}/${object}">${object}</a></li>`
+      htmlStr += `<li><a href="https://s3.localhost.localstack.cloud:4566/${bucketName}/${object}">${object}</a></li>`
     });
     htmlStr += "</ul></body></html>"
     return {
