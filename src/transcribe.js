@@ -1,8 +1,9 @@
 'use strict';
 
 const awsSdk = require('aws-sdk');
-const localstackHost = `http://${process.env.LOCALSTACK_HOSTNAME}:${process.env.EDGE_PORT}`
-const endpoint = new awsSdk.Endpoint(localstackHost);
+
+const endpoint_url = process.env.AWS_ENDPOINT_URL
+const endpoint = new awsSdk.Endpoint(endpoint_url);
 const endpointConfig = new awsSdk.Config({
   endpoint: endpoint
 });
