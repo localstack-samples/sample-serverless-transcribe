@@ -1,10 +1,10 @@
 service: aws-node-sample-transcribe-s3
 
 package:
-  exclude:
-    - node_modules/**
-    - venv/**
-    
+    patterns:
+    - '!**'
+    - 'src/**'
+
 frameworkVersion: "3"
 
 plugins:
