@@ -17,6 +17,7 @@ on:
 jobs:
   serverless:
     name: Setup infrastructure using Serverless Framework
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
