@@ -1,15 +1,16 @@
-const localstackHost = `http://${process.env.LOCALSTACK_HOSTNAME}:${process.env.EDGE_PORT}`;
 const awsSdk = require('aws-sdk');
-const sqs = new awsSdk.SQS({endpoint:localstackHost});
-const ses = new awsSdk.SES({endpoint:localstackHost});
-const s3 = new awsSdk.S3({endpoint:localstackHost, s3ForcePathStyle: true});
+
+const endpoint = process.env.AWS_ENDPOINT_URL;
+const sqs = new awsSdk.SQS({endpoint: endpoint});
+const ses = new awsSdk.SES({endpoint: endpoint});
+const s3 = new awsSdk.S3({endpoint: endpoint, s3ForcePathStyle: true});
+const queueUrl = `${endpoint}/000000000000/aws-node-sample-transcribe-s3-local-jobs`;
+const transcriptionBucket = process.env.S3_TRANSCRIPTION_BUCKET
 
 // This function consumes the event from s3 PutObject and pushes a new message to SQS.
 const producer = async (event, context, callback) => {
   let statusCode = 200;
   let message;
-
-  const queueUrl = `http://${process.env.LOCALSTACK_HOSTNAME}:${process.env.EDGE_PORT}/000000000000/aws-node-sample-transcribe-s3-local-jobs`;
 
   try {
     // Get the record from the s3 event
@@ -17,12 +18,12 @@ const producer = async (event, context, callback) => {
     const sqsSendMessagePromises = records.map((record) => {
         var jsonContent = "";
         const params = {
-            Bucket: process.env.S3_TRANSCRIPTION_BUCKET,
+            Bucket: transcriptionBucket,
             Key: record.s3.object.key
         };
         s3.getObject(params, (err, data) => {
             if (err) {
-              console.error("Error getting object from S3 bucket: ", process.env.S3_TRANSCRIPTION_BUCKET)
+              console.error("Error getting object from S3 bucket: ", transcriptionBucket)
             } else {
               jsonContent = JSON.parse(data.Body.toString());
 
@@ -78,7 +79,7 @@ const consumer = async (event) => {
           },
           Subject: {
             Charset: "UTF-8",
-            Data: "Test Email - JOB COMPLETED SUCESSFULLY"
+            Data: "Test Email - JOB COMPLETED SUCCESSFULLY"
           }
         },
         Source: "sender@example.com" // Sender email address

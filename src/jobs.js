@@ -1,7 +1,9 @@
 'use strict';
 
 const awsSdk = require('aws-sdk');
-const localstackHost = `http://${process.env.LOCALSTACK_HOSTNAME}:${process.env.EDGE_PORT}`
+
+const endpoint = process.env.AWS_ENDPOINT_URL
+const s3 = new awsSdk.S3({endpoint: endpoint, s3ForcePathStyle: true});
 
 // This function is triggered by an HTTP request using the GET method.
 // The function returns a list of all the transcription jobs stored in the S3 bucket.
@@ -24,8 +26,6 @@ exports.list = async (event, context, callback) => {
     <br>
     </ul>
 `
-
-  const s3 = new awsSdk.S3({endpoint:localstackHost, s3ForcePathStyle: true});
 
   const bucketName = "aws-node-sample-transcribe-s3-local-transcriptions";
   const params = {
