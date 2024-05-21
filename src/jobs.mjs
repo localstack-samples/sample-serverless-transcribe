@@ -1,13 +1,20 @@
 'use strict';
 
-const awsSdk = require('aws-sdk');
+import  { S3, ListObjectsCommand } from "@aws-sdk/client-s3";
 
 const endpoint = process.env.AWS_ENDPOINT_URL
-const s3 = new awsSdk.S3({endpoint: endpoint, s3ForcePathStyle: true});
+const s3 = new S3({
+  endpoint: endpoint,
+  forcePathStyle: true,
+  credentials: {
+    accessKeyId:'test',
+    secretAccessKey:'test'
+},
+});
 
 // This function is triggered by an HTTP request using the GET method.
 // The function returns a list of all the transcription jobs stored in the S3 bucket.
-exports.list = async (event, context, callback) => {
+export const list = async (event, context, callback) => {
   var htmlStr = `
   <!DOCTYPE html>
   <html>
@@ -33,8 +40,8 @@ exports.list = async (event, context, callback) => {
   };
 
   try {
-    const { Contents } = await s3.listObjects(params).promise();
-    const keys = Contents.map(({ Key }) => Key);
+    const data = await s3.send(new ListObjectsCommand(params));
+    const keys = data.Contents.map(({ Key }) => Key);
     keys.forEach(object => {
       htmlStr += `<li><a href="https://s3.localhost.localstack.cloud:4566/${bucketName}/${object}">${object}</a></li>`
     });
