@@ -2,7 +2,7 @@
   "type":"module",
   "dependencies": {
     "aws-sdk": "^2.1386.0",
-    "serverless": "^3.31.0",
+    "serverless": "^3.38.0",
     "serverless-lift": "^1.26.1",
     "serverless-localstack": "^1.1.1",
     "@aws-sdk/client-s3": "^3.0.0",
