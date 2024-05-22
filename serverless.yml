@@ -14,13 +14,13 @@ plugins:
 custom:
   defaultStage: local
   profile: default
-  runtime: nodejs14.x
+  runtime: nodejs20.x
   localstack:
     stages: [local]
 
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs20.x
   environment:
     S3_AUDIO_BUCKET: ${self:service}-${opt:stage, self:provider.stage}-records
     S3_TRANSCRIPTION_BUCKET: ${self:service}-${opt:stage, self:provider.stage}-transcriptions
@@ -45,7 +45,7 @@ provider:
 
 functions:
   transcribe:
-    handler: src/transcribe.process
+    handler: src/transcribe.transcribe_process
     events:
       - s3:
           bucket: ${self:provider.environment.S3_AUDIO_BUCKET}

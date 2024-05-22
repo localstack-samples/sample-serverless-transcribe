@@ -1,6 +1,6 @@
 // This function is triggered by an HTTP request using the GET method.
 // This function returns a HTML page with a form to upload a file to S3 and a list of files in the S3 bucket. 
-exports.get = async (event) => {
+export const get = async (event) => {
     const html = `
     <!DOCTYPE html>
     <html>

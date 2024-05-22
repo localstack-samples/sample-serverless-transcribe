@@ -11,11 +11,12 @@ usage:
 install:
 		@which localstack || pip install localstack
 		@which awslocal || pip install awscli-local
-		@which serverless || npm install -g serverless
+		@which serverless || npm install -g serverless@3.38.0
 		npm install
 
 ## Deploy the Transcribe sample
 deploy:
+	
 	sls deploy --stage local --verbose
 	make configure
 
