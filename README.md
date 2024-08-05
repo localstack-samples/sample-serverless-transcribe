@@ -40,10 +40,10 @@ We are using the following AWS services to build our infrastructure:
 - [Serverless Framework](https://www.npmjs.com/package/serverless) with [Serverless LocalStack Plugin](https://www.npmjs.com/package/serverless-localstack) and [Serverless Lift Plugin](https://www.npmjs.com/package/serverless-lift)
 - [Node.js](https://nodejs.org/en/download/) with `npm` package manager.
 
-Start LocalStack Pro with the `LOCALSTACK_API_KEY` pre-configured:
+Start LocalStack Pro with the `LOCALSTACK_AUTH_TOKEN` pre-configured:
 
 ```shell
-export LOCALSTACK_API_KEY=<your-api-key>
+export LOCALSTACK_AUTH_TOKEN=<your-auth-token>
 localstack start
 ```
 
@@ -124,7 +124,7 @@ You can then access the web interface on `http://localhost:3000` where you will 
 Then start LocalStack with the `SMTP_HOST` environment variable, pointing to the host and port where the SMTP server is reachable:
 
 ```shell
-export LOCALSTACK_API_KEY=<your-api-key>
+export LOCALSTACK_AUTH_TOKEN=<your-auth-token>
 SMTP_HOST=host.docker.internal:2525 localstack start
 ```
 
